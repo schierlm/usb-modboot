@@ -1,0 +1,25 @@
+#!/bin/bash -e
+mkdir -p dist/legacy-modules/usb-{modboot,loader}
+cp $1/efi/boot/{efi-shell,uefi-shell,memtest}.efi dist/legacy-modules/usb-modboot
+cp $1/grml-plus/*.img{,.gz} dist/legacy-modules/usb-modboot
+cp $1/grml-plus/usb-loader* dist/legacy-modules/usb-loader
+for ubcd_dir in $1/grml-plus/grub/ubcd5*; do
+	ubcd=`basename ${ubcd_dir}`
+	mkdir -p dist/${ubcd}/usb-modboot/tar
+	pushd dist/${ubcd}/usb-modboot/tar
+	cat >grub.cfg <<EOF
+		loopback ubcd /usb-modboot/${ubcd}.iso
+		set iso_path="/usb-modboot/${ubcd}.iso"
+		set images=(mod)
+		export iso_path images
+		configfile \$images/grub/${ubcd}/ubcd.cfg
+		loopback -d ubcd
+EOF
+	mkdir -p grub/${ubcd}
+	cp ${ubcd_dir}/* grub/${ubcd}
+	sed -i 's#(grml)/boot/addons/memdisk#(core)/boot/grub/memdisk#' grub/${ubcd}/ubcd.cfg
+	tar cf ../${ubcd}.iso.module.tar *
+	cd ..
+	rm -rf tar
+	popd
+done

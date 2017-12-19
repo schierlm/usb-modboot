@@ -1,0 +1,188 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-19 21:44+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: grub.cfg:126
+msgid "GRUB configuration"
+msgstr ""
+
+#: grub.cfg:166
+msgid "Language"
+msgstr ""
+
+#: grub.cfg:360
+msgid "English"
+msgstr ""
+
+#: grub.cfg:367 grub.cfg:254
+msgid "German"
+msgstr ""
+
+#: grub.cfg:180
+msgid "Color Scheme"
+msgstr ""
+
+#: grub.cfg:182
+msgid "Apply current scheme"
+msgstr ""
+
+#: grub.cfg:187
+msgid "Preview: Default scheme"
+msgstr ""
+
+#: grub.cfg:192
+msgid "Preview: Inverted"
+msgstr ""
+
+#: grub.cfg:197
+msgid "Preview: Barlond"
+msgstr ""
+
+#: grub.cfg:202
+msgid "Preview: Barlond2"
+msgstr ""
+
+#: grub.cfg:207
+msgid "Preview: Simple Black"
+msgstr ""
+
+#: grub.cfg:212
+msgid "Preview: Matrix"
+msgstr ""
+
+#: grub.cfg:217
+msgid "Preview: Dalton Bros."
+msgstr ""
+
+#: grub.cfg:222
+msgid "Preview: Debian"
+msgstr ""
+
+#: grub.cfg:227
+msgid "Preview: BW"
+msgstr ""
+
+#: grub.cfg:232
+msgid "Preview: BW Inverse"
+msgstr ""
+
+#: grub.cfg:237
+msgid "Preview: SGD"
+msgstr ""
+
+#: grub.cfg:242
+msgid "Preview: SGD Non Default"
+msgstr ""
+
+#: grub.cfg:248
+msgid "Keyboard layout"
+msgstr ""
+
+#: grub.cfg:249
+#, sh-format
+msgid "Default ${FIRMWARE_NAME} keyboard layout"
+msgstr ""
+
+#: grub.cfg:260
+msgid "Austrian"
+msgstr ""
+
+#: grub.cfg:266
+msgid "Swiss"
+msgstr ""
+
+#: grub.cfg:272
+msgid "Spanish"
+msgstr ""
+
+#: grub.cfg:278
+msgid "French"
+msgstr ""
+
+#: grub.cfg:284
+msgid "US English"
+msgstr ""
+
+#: grub.cfg:290
+msgid "Czech"
+msgstr ""
+
+#: grub.cfg:297
+msgid "Graphics resolution"
+msgstr ""
+
+#: grub.cfg:315
+msgid "Graphics mode"
+msgstr ""
+
+#: grub.cfg:316
+msgid "GRUB: Text, OS: Text"
+msgstr ""
+
+#: grub.cfg:323
+#, sh-format
+msgid "GRUB: Text, OS: Selected resolution ($gfxmode)"
+msgstr ""
+
+#: grub.cfg:330
+msgid "GRUB: Graphics, OS: Text"
+msgstr ""
+
+#: grub.cfg:339
+msgid "GRUB: Graphics, OS: Same resolution"
+msgstr ""
+
+#: grub.cfg:348
+#, sh-format
+msgid "GRUB: Graphics, OS: Selected resolution ($gfxmode)"
+msgstr ""
+
+#: grub.cfg:139
+msgid "All Boot Modules"
+msgstr ""
+
+#: grub.cfg:146
+msgid "Auto-detect operating systems on disk(s)"
+msgstr ""
+
+#: grub.cfg:150
+#, sh-format
+msgid "Exit to ${FIRMWARE_NAME}"
+msgstr ""
+
+#: grub.cfg:156
+msgid "Reboot"
+msgstr ""
+
+#: grub.cfg:160
+msgid "Halt"
+msgstr ""
+
+#: grub.cfg:44
+#, sh-format
+msgid "Skipping unsupported ISO module: ${file}"
+msgstr ""
+
+#: grub.cfg:97
+#, sh-format
+msgid "Skipping unsupported module: ${file}"
+msgstr ""
+
+#: win10recovery.cfg:6
+msgid "Architecture not supported."
+msgstr ""

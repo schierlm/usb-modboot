@@ -1,0 +1,285 @@
+--- a/grub-core/Makefile.core.def
++++ b/grub-core/Makefile.core.def
+@@ -762,6 +762,11 @@
+ };
+ 
+ module = {
++  name = bqcat;
++  common = commands/bqcat.c;
++};
++
++module = {
+   name = cmp;
+   common = commands/cmp.c;
+ };
+@@ -908,6 +913,11 @@
+ };
+ 
+ module = {
++  name = popenv;
++  common = commands/popenv.c;
++};
++
++module = {
+   name = ls;
+   common = commands/ls.c;
+ };
+@@ -1055,6 +1065,11 @@
+ };
+ 
+ module = {
++  name = bqvideoinfo;
++  common = commands/bqvideoinfo.c;
++};
++
++module = {
+   name = videotest;
+   common = commands/videotest.c;
+ };
+--- a/grub-core/commands/bqcat.c
++++ b/grub-core/commands/bqcat.c
+@@ -0,0 +1,50 @@
++/* bqcat.c - command to store the contents of a file in a variable */
++
++#include <grub/dl.h>
++#include <grub/file.h>
++#include <grub/env.h>
++#include <grub/command.h>
++
++GRUB_MOD_LICENSE ("GPLv3+");
++
++static grub_err_t
++grub_cmd_bqcat (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
++{
++  grub_file_t file;
++  grub_ssize_t size;
++  grub_ssize_t done = 0;
++  char* buffer;
++
++  if (argc != 2)
++    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename and variable name expected"));
++
++  file = grub_file_open (args[0]);
++  if (! file)
++    return grub_errno;
++
++  buffer = grub_malloc(file->size + 1);
++
++  while ((size = grub_file_read (file, buffer + done, file->size - done)) > 0)
++    {
++      done += size;
++    }
++
++  buffer[done] = '\0';
++  grub_env_set (args[1], buffer);
++  grub_file_close (file);
++  grub_free(buffer);
++
++  return 0;
++}
++
++static grub_command_t cmd;
++
++GRUB_MOD_INIT(bqcat)
++{
++  cmd = grub_register_command ("bqcat", grub_cmd_bqcat, N_("FILE VARIABLE"), N_("Store the contents of a file in a variable."));
++}
++
++GRUB_MOD_FINI(bqcat)
++{
++  grub_unregister_command (cmd);
++}
+--- a/grub-core/commands/bqvideoinfo.c
++++ b/grub-core/commands/bqvideoinfo.c
+@@ -0,0 +1,95 @@
++/* bqvideoinfo.c - command to store video modes in a variable.  */
++
++#include <grub/video.h>
++#include <grub/dl.h>
++#include <grub/env.h>
++#include <grub/mm.h>
++#include <grub/command.h>
++
++GRUB_MOD_LICENSE ("GPLv3+");
++
++struct hook_ctx
++{
++  unsigned int len;
++  char* data;
++};
++
++static int
++hook (const struct grub_video_mode_info *info, void *hook_arg)
++{
++  unsigned int len;
++  struct hook_ctx *ctx = hook_arg;
++  char buf[24];
++  if (info->mode_type & GRUB_VIDEO_MODE_TYPE_PURE_TEXT)
++    return 0;
++  grub_snprintf (buf, sizeof(buf), "%dx%dx%d ", info->width, info->height, info->bpp);
++  len = grub_strlen(buf);
++  if (ctx->data)
++    {
++      grub_strcpy(ctx->data + ctx->len, buf);
++    }
++  ctx->len += len;
++  return 0;
++}
++
++static grub_err_t
++grub_cmd_bqvideoinfo (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
++{
++  grub_video_adapter_t adapter;
++  grub_video_driver_id_t id;
++  struct hook_ctx ctx;
++
++  if (argc != 1)
++    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("variable name expected"));
++
++#ifdef GRUB_MACHINE_PCBIOS
++  grub_dl_load ("vbe");
++#endif
++
++  id = grub_video_get_driver_id ();
++
++  FOR_VIDEO_ADAPTERS (adapter)
++  {
++    if (adapter->id != id && (id != GRUB_VIDEO_DRIVER_NONE || adapter->init() != GRUB_ERR_NONE))
++      {
++        continue;
++      }
++
++    ctx.data = NULL;
++    ctx.len = 0;
++    adapter->iterate (hook, &ctx);
++    ctx.data = grub_malloc(ctx.len+1);
++    ctx.len = 0;
++    adapter->iterate (hook, &ctx);
++
++    if (adapter->id != id)
++      {
++        adapter->fini();
++      }
++
++    if (id != GRUB_VIDEO_DRIVER_NONE || ctx.len)
++      {
++        grub_env_set (args[0], ctx.data);
++        grub_free(ctx.data);
++	break;
++      }
++    else
++      {
++        grub_free(ctx.data);
++      }
++  }
++
++  return 0;
++}
++
++static grub_command_t cmd;
++
++GRUB_MOD_INIT(bqvideoinfo)
++{
++  cmd = grub_register_command ("bqvideoinfo", grub_cmd_bqvideoinfo, N_("VARIABLE"), N_("Store available video modes in a variable."));
++}
++
++GRUB_MOD_FINI(bqvideoinfo)
++{
++  grub_unregister_command (cmd);
++}
+--- a/grub-core/commands/popenv.c
++++ b/grub-core/commands/popenv.c
+@@ -0,0 +1,79 @@
++/* popenv.c - commands for passing variables from submenus.  */
++
++#include <grub/dl.h>
++#include <grub/env_private.h>
++#include <grub/command.h>
++#include <grub/mm.h>
++
++GRUB_MOD_LICENSE ("GPLv3+");
++
++extern int grub_normal_exit_level;
++
++static grub_err_t
++grub_cmd_pop_env (grub_command_t cmd __attribute__ ((unused)), int argc, char **args)
++{
++
++  while (argc)
++    {
++      struct grub_env_context *cc = grub_current_context;
++      const char *value;
++
++      value = grub_env_get (args[0]);
++      if (value)
++        {
++	  grub_current_context = grub_current_context->prev;
++	  while(grub_current_context && grub_env_get(args[0]))
++	    {
++              grub_env_set(args[0], value);
++              grub_current_context = grub_current_context->prev;
++	    }
++          grub_current_context = cc;
++        }
++      argc--;
++      args++;
++    }
++
++  return 0;
++}
++
++static grub_err_t
++grub_cmd_submenu_exit (grub_command_t cmd __attribute__ ((unused)), int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
++{
++  grub_normal_exit_level = -1;
++  return 0;
++}
++
++static grub_err_t
++grub_cmd_clear_menu (grub_command_t cmd __attribute__ ((unused)), int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
++{
++  grub_menu_t menu = grub_env_get_menu();
++  // grub_free(menu->entry_list); // TODO: recursively?
++  menu->entry_list = NULL;
++  menu->size=0;
++  return 0;
++}
++
++static grub_command_t cmd_pop, cmd_sub_exit, cmd_clear_menu;
++
++GRUB_MOD_INIT(popenv)
++{
++  cmd_pop =
++    grub_register_command ("pop_env", grub_cmd_pop_env,
++			  N_("variable_name [...]"),
++			  N_("Pass variable value to parent contexts."));
++
++  cmd_sub_exit =
++    grub_register_command ("submenu_exit", grub_cmd_submenu_exit, 0,
++			  N_("Exit from current submenu."));
++
++  cmd_clear_menu =
++    grub_register_command ("clear_menu", grub_cmd_clear_menu, 0,
++			  N_("Clear the current (sub)menu."));
++}
++
++GRUB_MOD_FINI(popenv)
++{
++  grub_unregister_command (cmd_pop);
++  grub_unregister_command (cmd_sub_exit);
++  grub_unregister_command (cmd_clear_menu);
++}
+--- a/grub-core/normal/menu.c
++++ b/grub-core/normal/menu.c
+@@ -908,5 +908,11 @@
+       break;
+     }
+ 
++  if (nested && grub_normal_exit_level == -1)
++    {
++      menu_fini();
++      grub_normal_exit_level++;
++    }
++
+   return err1;
+ }

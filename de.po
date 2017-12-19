@@ -1,0 +1,184 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: USB-ModBoot\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-19 21:44+0100\n"
+"PO-Revision-Date: 2017-12-19 21:45+0100\n"
+"Last-Translator: Michael Schierl <schierlm@gmx.de>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: grub.cfg:126
+msgid "GRUB configuration"
+msgstr "GRUB-Konfiguration"
+
+#: grub.cfg:166
+msgid "Language"
+msgstr "Sprache"
+
+#: grub.cfg:360
+msgid "English"
+msgstr "Englisch"
+
+#: grub.cfg:367 grub.cfg:254
+msgid "German"
+msgstr "Deutsch"
+
+#: grub.cfg:180
+msgid "Color Scheme"
+msgstr "Farbschema"
+
+#: grub.cfg:182
+msgid "Apply current scheme"
+msgstr "Aktuelles Schema anwenden"
+
+#: grub.cfg:187
+msgid "Preview: Default scheme"
+msgstr "Vorschau: Standardschema"
+
+#: grub.cfg:192
+msgid "Preview: Inverted"
+msgstr "Vorschau: Invertiert"
+
+#: grub.cfg:197
+msgid "Preview: Barlond"
+msgstr "Vorschau: Barlond"
+
+#: grub.cfg:202
+msgid "Preview: Barlond2"
+msgstr "Vorschau: Barlond2"
+
+#: grub.cfg:207
+msgid "Preview: Simple Black"
+msgstr "Vorschau: Einfach Schwarz"
+
+#: grub.cfg:212
+msgid "Preview: Matrix"
+msgstr "Vorschau: Matrix"
+
+#: grub.cfg:217
+msgid "Preview: Dalton Bros."
+msgstr "Vorschau: Dalton-Brüder"
+
+#: grub.cfg:222
+msgid "Preview: Debian"
+msgstr "Vorschau: Debian"
+
+#: grub.cfg:227
+msgid "Preview: BW"
+msgstr "Vorschau: S/W"
+
+#: grub.cfg:232
+msgid "Preview: BW Inverse"
+msgstr "Vorschau: S/W Invertiert"
+
+#: grub.cfg:237
+msgid "Preview: SGD"
+msgstr "Vorschau: SGD"
+
+#: grub.cfg:242
+msgid "Preview: SGD Non Default"
+msgstr "Vorschau: SGD Nicht-Standard"
+
+#: grub.cfg:248
+msgid "Keyboard layout"
+msgstr "Tastaturlayout"
+
+#: grub.cfg:249
+#, sh-format
+msgid "Default ${FIRMWARE_NAME} keyboard layout"
+msgstr "Standard ${FIRMWARE_NAME}-Tastaturlayout"
+
+#: grub.cfg:260
+msgid "Austrian"
+msgstr "Österreichisch"
+
+#: grub.cfg:266
+msgid "Swiss"
+msgstr "Schweizer"
+
+#: grub.cfg:272
+msgid "Spanish"
+msgstr "Spanisch"
+
+#: grub.cfg:278
+msgid "French"
+msgstr "Französisch"
+
+#: grub.cfg:284
+msgid "US English"
+msgstr "US-Englisch"
+
+#: grub.cfg:290
+msgid "Czech"
+msgstr "Tschechisch"
+
+#: grub.cfg:297
+msgid "Graphics resolution"
+msgstr "Grafikauflösung"
+
+#: grub.cfg:315
+msgid "Graphics mode"
+msgstr "Grafikmodus"
+
+#: grub.cfg:316
+msgid "GRUB: Text, OS: Text"
+msgstr "GRUB: Text, Betriebssystem: Text"
+
+#: grub.cfg:323
+#, sh-format
+msgid "GRUB: Text, OS: Selected resolution ($gfxmode)"
+msgstr "GRUB: Text, Betriebssystem: Gewählte Auflösung ($gfxmode)"
+
+#: grub.cfg:330
+msgid "GRUB: Graphics, OS: Text"
+msgstr "GRUB: Grafik, Betriebssystem: Text"
+
+#: grub.cfg:339
+msgid "GRUB: Graphics, OS: Same resolution"
+msgstr "GRUB: Grafik, Betriebssystem: Selbe Auflösung"
+
+#: grub.cfg:348
+#, sh-format
+msgid "GRUB: Graphics, OS: Selected resolution ($gfxmode)"
+msgstr "GRUB: Grafik, Betriebssystem: Gewählte Auflösung ($gfxmode)"
+
+#: grub.cfg:139
+msgid "All Boot Modules"
+msgstr "Alle Boot-Module"
+
+#: grub.cfg:146
+msgid "Auto-detect operating systems on disk(s)"
+msgstr "Betriebssysteme auf Festplatte(n) automatisch erkennen"
+
+#: grub.cfg:150
+#, sh-format
+msgid "Exit to ${FIRMWARE_NAME}"
+msgstr "Zurück zu ${FIRMWARE_NAME}"
+
+#: grub.cfg:156
+msgid "Reboot"
+msgstr "Neustart"
+
+#: grub.cfg:160
+msgid "Halt"
+msgstr "Ausschalten"
+
+#: grub.cfg:44
+#, sh-format
+msgid "Skipping unsupported ISO module: ${file}"
+msgstr "Nicht unterstütztes ISO-Modul übersprungen: ${file}"
+
+#: grub.cfg:97
+#, sh-format
+msgid "Skipping unsupported module: ${file}"
+msgstr "Nicht unterstütztes Modul übersprungen: ${file}"
+
+#: win10recovery.cfg:6
+msgid "Architecture not supported."
+msgstr "Architektur nicht unterstützt."
+

@@ -1,0 +1,52 @@
+#!/bin/bash -e
+if [ $# -lt 2 ]; then
+	echo "Usage: ./build-debian-installer-module </path/to/filename.iso> http://<debianmirror>/debian/dists/<codename>/main/installer-<arch>/<version>/images"
+	exit 1
+fi
+
+rm -rf build/debian
+mkdir -p build/debian
+mount $1 build/mnt -o ro,loop
+VMLINUZ_NAME=$(grep vmlinuz build/mnt/boot/grub/grub.cfg | awk '{print $2}' | head -n 1)
+FOLDER_NAME=${VMLINUZ_NAME%/vmlinuz}
+
+wget -P build/debian "$2/cdrom/vmlinuz"
+
+if ! cmp -s build/debian/vmlinuz build/mnt$VMLINUZ_NAME; then
+	echo 'Error: VMLINUZ differs on the iso - did you specify the correct debian installer version?'
+	umount build/mnt
+	exit 1
+fi
+
+rm build/debian/vmlinuz
+wget -P build/debian "$2/hd-media/gtk/initrd.gz"
+mv build/debian/initrd.gz build/debian/gtk_initrd.gz
+wget -P build/debian "$2/hd-media/initrd.gz"
+
+touch build/debian/q.gz
+
+sed '0,/theme/d' build/mnt/boot/grub/grub.cfg | \
+	sed "s#${FOLDER_NAME}/vmlinuz#${FOLDER_NAME}/vmlinuz iso-scan/filename=\${iso_path} iso-scan/ask_second_pass=true#" | \
+	sed "s#${FOLDER_NAME}/gtk/vmlinuz#${FOLDER_NAME}/gtk/vmlinuz iso-scan/filename=\${iso_path} iso-scan/ask_second_pass=true#" | \
+	sed "s#${FOLDER_NAME}/gtk/initrd.gz#(mod)/gtk_initrd.gz#" | \
+	sed "s#${FOLDER_NAME}/initrd.gz#(mod)/initrd.gz#" >build/debian/debian.cfg
+
+printf 'LABEL=%q\n' "$(cat build/mnt/.disk/info)" >$1.module.tar.ini
+umount build/mnt
+
+cat >build/debian/grub.cfg <<EOF
+	set orig_root="\$root"
+	regexp -s 1:iso_path '^(.*)\\.module\\.tar\$' "\$MODULE_PATH"
+	export iso_path
+	loopback deb "\$iso_path"
+	set root=(deb)
+	configfile (mod)/debian.cfg
+	loopback -d deb
+	set root="\$orig_root"
+EOF
+
+cd build/debian
+tar cf debian.tar *.cfg *.gz
+cd ../..
+mv build/debian/debian.tar $1.module.tar
+echo "Module build finished."

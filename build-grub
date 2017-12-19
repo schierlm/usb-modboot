@@ -1,0 +1,77 @@
+#!/bin/bash -e
+
+GRUB_VERSION=2.02
+GRUB_VERSION_SUFFIX=-umb0.9
+SYSLINUX_VERSION=6.03
+
+# download, unpack and patch sources
+rm -rf build/grub build/core dist
+mkdir -p build/{grub,mnt} build/core/boot/grub/{i386-pc,x86_64-efi,locale,fonts,kbd} build/core32/boot/grub/i386-efi dist/usb-modboot/efi/boot dist/usb-modboot/usb-modboot dist/usb-modboot/install dist/efi32/efi/boot
+cd build
+[ -f grub-${GRUB_VERSION}.tar.xz ] || wget http://ftp.gnu.org/gnu/grub/grub-${GRUB_VERSION}.tar.xz
+[ -f grub-${GRUB_VERSION}-for-windows.zip ] || wget http://ftp.gnu.org/gnu/grub/grub-${GRUB_VERSION}-for-windows.zip
+[ -f syslinux-${SYSLINUX_VERSION}.tar.xz ] || wget https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.xz
+cd grub
+tar xfvJ ../grub-${GRUB_VERSION}.tar.xz
+tar xfvJ ../syslinux-${SYSLINUX_VERSION}.tar.xz syslinux-${SYSLINUX_VERSION}/bios/memdisk/memdisk
+unzip ../grub-${GRUB_VERSION}-for-windows.zip grub-${GRUB_VERSION}-for-windows/grub-{probe,bios-setup}.exe
+mv grub-${GRUB_VERSION}-for-windows/*.exe ../../dist/usb-modboot/install
+mv syslinux-${SYSLINUX_VERSION}/bios/memdisk/memdisk ../core/boot/grub
+cd grub-${GRUB_VERSION}
+patch -p1 <../../../grub.patch
+./autogen.sh
+
+# build i386-efi image
+./configure PACKAGE_VERSION="${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" PACKAGE_STRING="GRUB ${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" --with-platform=efi --target=i386-pe
+make
+echo 'loopback core32 ($root)/efi/boot/core32.dat' >../confscript_efi32
+echo 'set prefix=(core32)/boot/grub' >>../confscript_efi32
+./grub-mkimage -d ./grub-core -O i386-efi -o ../../../dist/efi32/efi/boot/bootia32.efi -p '' -c ../confscript_efi32 fat part_msdos loopback
+cp grub-core/*.{lst,mod} ../../core32/boot/grub/i386-efi
+
+# build x86_64-efi image
+./configure PACKAGE_VERSION="${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" PACKAGE_STRING="GRUB ${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" --with-platform=efi --target=amd64-pe
+make
+echo 'loopback core ($root)/usb-modboot/core-module.dat' >../confscript_efi
+echo 'set prefix=(core)/boot/grub' >>../confscript_efi
+./grub-mkimage -d ./grub-core -O x86_64-efi -o ../../../dist/usb-modboot/efi/boot/grub.efi -p '' -c ../confscript_efi fat part_msdos loopback
+cp grub-core/*.{lst,mod} ../../core/boot/grub/x86_64-efi
+
+# build i386-pc image
+make distclean
+./linguas.sh
+./configure PACKAGE_VERSION="${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" PACKAGE_STRING="GRUB ${GRUB_VERSION}${GRUB_VERSION_SUFFIX}" --with-platform=pc
+make
+echo 'set root=$root,msdos1' >../confscript_bios
+echo 'loopback core ($root)/usb-modboot/core-module.dat' >>../confscript_bios
+echo 'set prefix=(core)/boot/grub' >>../confscript_bios
+./grub-mkimage -d ./grub-core -O i386-pc -o ../../../dist/usb-modboot/install/core.img -p '' -c ../confscript_bios biosdisk fat part_msdos loopback
+cp grub-core/*.{lst,mod} grub-core/efiemu{32,64}.o ../../core/boot/grub/i386-pc
+cp grub-core/boot.img ../../../dist/usb-modboot/install
+
+# build USB-Loader compatible i386-pc image
+echo "echo Core loaded from USB. Press [Return] to boot." >../usbloaderscript
+echo "read tmp" >>../usbloaderscript
+echo "search.file /usb-modboot/core-module.dat root" >>../usbloaderscript
+echo 'loopback core ($root)/usb-modboot/core-module.dat' >>../usbloaderscript
+echo 'set prefix=(core)/boot/grub' >>../usbloaderscript
+./grub-mkimage -d ./grub-core -O i386-pc -o ../usb-loader-core.img -p '' -c ../usbloaderscript at_keyboard usb_keyboard usbms uhci ohci ehci fat part_msdos loopback search_fs_file read echo
+
+# copy generic files
+cp po/de.gmo ../../core/boot/grub/locale
+cp euro.pf2 ../../core/boot/grub/fonts
+cp docs/osdetect.cfg ../../core/boot/grub
+for i in de at ch es fr us cz; do 
+	ckbcomp $i | ./grub-mklayout -o ../../core/boot/grub/kbd/$i.gkb
+done
+
+# patch MBR to avoid detecting it as FAT-formatted superfloppy by some embedded devices
+# (see <https://github.com/schierlm/grml-plus/blob/master/data/patch-grub-mbr.pl#L3-14>)
+xxd -r - ../../../dist/usb-modboot/install/boot.img <<'EOF'
+  0000000: 90eb 62
+EOF
+xxd -r - ../../../dist/usb-modboot/install/core.img <<'EOF'
+  000011b: 5553 4220 4d42 52
+EOF
+
+echo "GRUB build finished."

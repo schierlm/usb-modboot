@@ -1,0 +1,24 @@
+#!/bin/bash -e
+
+SGD_VERSION=2.02s9
+SGD_NAME=super_grub2_disk_hybrid_$SGD_VERSION.iso
+wget -P build -nc http://prdownloads.sourceforge.net/supergrub2/$SGD_VERSION/$SGD_NAME
+rm -rf build/sgd
+mkdir -p build/sgd
+mount build/$SGD_NAME build/mnt -o ro,loop
+cp -r build/mnt/boot build/sgd
+umount build/mnt
+rm -r build/sgd/boot/grub/{*-*,locale,fonts,roms,unifont.pf2}
+cat >build/sgd/grub.cfg <<EOF
+	loadfont (core)/boot/grub/fonts/euro.pf2
+	insmod all_video
+	terminal_output gfxterm
+	set orig_root="$root"
+	set root=(mod)
+	configfile /boot/grub/grub.cfg
+	set root="$orig_root"
+	terminal_output console
+EOF
+cd build/sgd
+tar cf ../../dist/super_grub2_disk_$SGD_VERSION.tar grub.cfg boot
+echo "Building dist/super_grub2_disk_$SGD_VERSION.tar done"

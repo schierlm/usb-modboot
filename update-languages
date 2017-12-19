@@ -1,0 +1,5 @@
+#!/bin/sh -e
+xgettext -j -L shell -o usb-modboot.pot *.cfg 2>&1 | \
+	grep -v "deprecated due to security reasons" || true
+
+for f in *.po; do msgmerge -U "$f" usb-modboot.pot; done

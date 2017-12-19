@@ -1,0 +1,49 @@
+#!/bin/bash -e
+if ! [ -f build/PreLoader.efi ]; then
+	wget -P build https://blog.hansenpartnership.com/wp-uploads/2013/PreLoader.efi
+	wget -P build https://blog.hansenpartnership.com/wp-uploads/2013/HashTool.efi
+	wget -P build https://github.com/schierlm/grml-plus-uefi-tools/releases/download/v0.2.5/usb-modboot-loader.efi
+fi
+cp menu.ini dist/usb-modboot/usb-modboot
+cp grub.cfg build/core/boot/grub
+cp bios-install* dist/usb-modboot/install
+cp build/PreLoader.efi dist/usb-modboot/efi/boot/bootx64.efi
+cp build/HashTool.efi dist/usb-modboot/efi/boot
+cp build/usb-modboot-loader.efi dist/usb-modboot/efi/boot/loader.efi
+mkdir -p build/core/boot/grub/locale/usb-modboot
+for f in *.po; do
+	msgfmt -o build/core/boot/grub/locale/usb-modboot/${f%.po}.gmo $f
+done
+dd if=/dev/zero of=dist/usb-modboot/usb-modboot/core-module.dat bs=1k count=5056 status=none
+mkdosfs -s 1 -r 16 dist/usb-modboot/usb-modboot/core-module.dat
+mount -o loop dist/usb-modboot/usb-modboot/core-module.dat build/mnt
+cp -r build/core/* build/mnt
+df build/mnt
+umount build/mnt
+cat >build/core32/boot/grub/grub.cfg <<EOF
+	loopback core (\$root)/usb-modboot/core-module.dat
+	source (core)/boot/grub/grub.cfg
+EOF
+dd if=/dev/zero of=dist/efi32/efi/boot/core32.dat bs=1k count=2048 status=none
+mkdosfs -s 1 -r 16 dist/efi32/efi/boot/core32.dat
+mount -o loop dist/efi32/efi/boot/core32.dat build/mnt
+cp -r build/core32/* build/mnt
+df build/mnt
+umount build/mnt
+mkdir -p dist/grml-plus-legacy/grml-plus/grub dist/grml-plus-legacy/usb-modboot
+cp build/grub/usb-loader-core.img dist/grml-plus-legacy/grml-plus/grub
+cp grml-plus-menu.cfg dist/grml-plus-legacy/usb-modboot
+echo 'LABEL="Legacy grml-plus Menu"' >dist/grml-plus-legacy/usb-modboot/grml-plus-menu.cfg.ini
+rm -f build/sparsedisk
+dd if=/dev/zero of=build/sparsedisk bs=1k count=1 seek=799999 status=none
+echo 'start=63,type=0b,bootable' | sfdisk build/sparsedisk -q
+LOOPDEV=`losetup -f`
+losetup -P $LOOPDEV build/sparsedisk
+mkdosfs ${LOOPDEV}p1
+mount ${LOOPDEV}p1 build/mnt
+mkdir -p build/mnt/usb-modboot
+umount build/mnt
+losetup -d $LOOPDEV
+grub-bios-setup -d dist/usb-modboot/install build/sparsedisk
+dd if=build/sparsedisk bs=1M count=2 status=none | xz --best >dist/usb-modboot/install/usb-bootblock.img.xz
+echo Build done.
