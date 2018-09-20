@@ -138,6 +138,11 @@ to edit menu files (unless you want to add the modules into the favourite module
   (<200KB) lite version of [Super Grub2 Disk](https://www.supergrubdisk.org/). The official Super Grub2 Disk ISO works too, but the fonts look
   a bit worse, and it is a lot bigger (not to forget the big scary warning at startup that loopback booting is not officially supported).
 
+- [module.ubuldr.zip]() contains an alternative EFI loader that can load Ubuntu and Windows 10 with Secure Boot enabled,
+  without needing to enroll any hashes. In case Secure Boot is disabled, the loader is automatically skipped. There is also
+  an option to continue to the "normal" menu (which may require enrolling the hash of loader.efi). It is normal that one file
+  (`bootx64.efi`) is overwritten, therefore make sure to extract this after extracting the main `.zip` file.
+
 
 There are also modules that should be dropped next to an [UltimateBootCD 5.3.7 ISO](http://www.ultimatebootcd.com/) or a
 [Debian 9.3.0 netinst ISO](https://www.debian.org/distrib/), to support booting from them. More modules may be added in the
