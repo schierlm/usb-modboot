@@ -63,7 +63,7 @@ Boot multiple systems from a single GRUB2-powered USB drive (just drop ISO or ot
 
 ### Supported Modules
 
-To add modules, just copy them into `/usb-loader/`directory. The following module types
+To add modules, just copy them into `/usb-modboot/` directory. The following module types
 are supported:
 
 - Directories or `tar` files containing a `grub.cfg` file. These modules will then chainload
